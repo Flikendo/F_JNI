@@ -36,6 +36,25 @@ public class jni.HelloWorld {
     }
 }
 ```
+```
+package jni;
+
+public class Parameters {
+    // Load the library
+    static {
+        System.loadLibrary("libparameters");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Parameters().sumIntegers(8, 7));
+        new Parameters().isHigherThan(3, 2);
+    }
+
+    // Native method which is in C/C++ code
+    private native long sumIntegers(int firstNum, int secondNum);
+    private native void isHigherThan(int firstNum, int secondNum);
+}
+```
 
 As we can see, we load the shared library in a static block. This ensures that it will be ready when we need it and from wherever we need it.
 
@@ -90,22 +109,33 @@ JNIEXPORT void JNICALL Java_java_jni_HelloWorld_sayHello (JNIEnv *, jobject) {
 }
 ```
 ```
-package jni;
+#include "jni_Parameters.h"
+#include <iostream>
 
-public class Parameters {
-    // Load the library
-    static {
-        System.loadLibrary("libparameters");
+using namespace std;
+
+/*
+ * Class:     jni_Parameters
+ * Method:    sumIntegers
+ * Signature: (II)I
+ */
+JNIEXPORT jlong JNICALL Java_jni_Parameters_sumIntegers (JNIEnv *env, jobject j_parameters, jint first_num,
+                                                         jint second_num) {
+    return (long)first_num + (long)second_num;
+}
+
+/*
+ * Class:     jni_Parameters
+ * Method:    isHigherThan
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_jni_Parameters_isHigherThan (JNIEnv *env, jobject j_parameters, jint first_num,
+                                                            jint second_num) {
+    if (first_num < second_num) {
+        cout << "Firts number is lower than the second number." << endl;
+    } else {
+        cout << "Second number is higher than the first number." << endl;
     }
-
-    public static void main(String[] args) {
-        System.out.println(new Parameters().sumIntegers(8, 7));
-        new Parameters().isHigherThan(3, 2);
-    }
-
-    // Native method which is in C/C++ code
-    private native long sumIntegers(int firstNum, int secondNum);
-    private native void isHigherThan(int firstNum, int secondNum);
 }
 ```
 
