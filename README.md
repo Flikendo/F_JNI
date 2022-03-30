@@ -2,91 +2,160 @@
 
 
 
-## Getting started
+## Introduction
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/Flikendo/f_jni.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/Flikendo/f_jni/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+The porpouse of this project is to get the concept of Java Native Interface (JNI), so that it starts with a basic 
+example where Java calls a function in C++.
 
 ***
 
-# Editing this README
+## Basic Structure
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+JAVA => JNI => C/C++
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+***
 
-## Name
-Choose a self-explaining name for your project.
+## Creating the Java Class
+Let's start creating our first JNI program by implementing a classic “Hello World”.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+To begin, we create the following Java class that includes the native method that will perform the work:
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```
+package jni;
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+public class jni.HelloWorld {
+    // Load the library without "lib" either extension
+    static {
+        System.loadLibrary("native");
+    }
+    // Native method which is in C/C++ code
+    private native void sayHello();
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+    public static void main(String[] args) {
+        new jni.HelloWorld().sayHello();
+    }
+}
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+As we can see, we load the shared library in a static block. This ensures that it will be ready when we need it and from wherever we need it.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Alternatively, in this trivial program, we could instead load the library just before calling our native method because we're not using the native library anywhere else.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+***
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Implementing a Method in C++
+Now, we need to create the implementation of our native method in C++.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Within C++ the definition and the implementation are usually stored in .h and .cpp files respectively.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+First, to create the definition of the method, we have to use the -h flag of the Java compiler:
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+```
+javac -h cpp/ jni/HelloWorld.java
+```
+```
+javac -h cpp/ jni/Parameters.java
+```
 
-## License
-For open source projects, say how it is licensed.
+This will generate a "java_HelloWorld.h" file with all the native methods included in the class passed as a parameter, in 
+this case, only one:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```
+JNIEXPORT void JNICALL Java_java_jni_HelloWorld_sayHello (JNIEnv *, jobject);
+
+```
+```
+JNIEXPORT jlong JNICALL Java_jni_Parameters_sumIntegers (JNIEnv *, jobject, jint, jint);
+JNIEXPORT void JNICALL Java_jni_Parameters_isHigherThan (JNIEnv *, jobject, jint, jint);
+```
+
+As we can see, the function name is automatically generated using the fully qualified package, class and method name.
+
+Also, something interesting that we can notice is that we're getting two parameters passed to our function; a pointer to
+the current JNIEnv; and also the Java object that the method is attached to, the instance of our "main class".
+
+Now, we have to create a new .cpp file for the implementation of the sayHello function. This is where we'll perform 
+actions that print “Hello World” to console.
+
+We'll name our .cpp file with the same name as the .h one containing the header and add this code to implement the 
+native function:
+
+```
+#include "java_jni_HelloWorld.h"
+#include <iostream>
+
+// Function which is called from Java
+JNIEXPORT void JNICALL Java_java_jni_HelloWorld_sayHello (JNIEnv *, jobject) {
+    std::cout << "Hello from C++ !!" << std::endl;
+}
+```
+```
+package jni;
+
+public class Parameters {
+    // Load the library
+    static {
+        System.loadLibrary("libparameters");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Parameters().sumIntegers(8, 7));
+        new Parameters().isHigherThan(3, 2);
+    }
+
+    // Native method which is in C/C++ code
+    private native long sumIntegers(int firstNum, int secondNum);
+    private native void isHigherThan(int firstNum, int secondNum);
+}
+```
+
+***
+
+## Compiling and Linking
+
+Ubuntu version: 
+```
+g++ -c -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" jni_HelloWorld.cpp -o jni.HelloWorld.o
+```
+
+Windows version:
+```
+g++ -c -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" cpp/jni_HelloWorld.cpp -o cpp/jni_HelloWorld.o
+```
+```
+g++ -c -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" cpp/jni_Parameters.cpp -o cpp/jni_Parameters.o
+```
+
+Once we have the code compiled for our platform into the file jni.HelloWorld.o, we have to include it in a new shared 
+library. Whatever we decide to name it is the argument passed into the method System.loadLibrary.
+
+## Create the library
+Ubuntu version:
+```
+g++ -shared -fPIC -o libhelloworld.so ..cpp/jni_HelloWorld.o -lc
+```
+
+Windows version:
+```
+g++ -shared -o libhelloworld.dll ../cpp/jni_HelloWorld.o -Wl
+g++ -shared -o libhelloworld.dll ../cpp/jni_HelloWorld.o -Wl,--add-stdcall-alias
+```
+```
+g++ -shared -o libparameters.dll ../cpp/jni_Parameters.o -Wl
+```
+
+## Important!
+However, we need to add the full path to the directory containing the library we've just generated. This way Java will
+know where to look for our native libs, the following command has to be executed from "src/"
+```
+java -cp . -Djava.library.path=lib/. jni.HelloWorld
+```
+```
+java -cp . -Djava.library.path=lib/. jni.Parameters
+```
+
+***
+
+## Set up Intellij
+In order to run the project with C++ libraries it has to be configured, so that go to Right Click in the project -> 
+Open Module Settings -> Libraries -> Add new -> Java -> Select library path.
